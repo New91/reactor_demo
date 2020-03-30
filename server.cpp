@@ -49,6 +49,15 @@ int main(int argc, char **argv)
     {
         int len = sizeof(clt_addr);
         conn_fd = accept(serv_sock, (struct sockaddr *)&clt_addr, (socklen_t *)&len);
+        if(conn_fd < 0){
+            if(errno == EINTR)
+                continue;
+            else
+            {
+                fprintf(stderr, "accept error\n");
+            }
+            
+        }
         printf("Info: connect from %s, port %d\n", 
             inet_ntop(AF_INET, &clt_addr.sin_addr, buff, sizeof(buff)),
             ntohs(clt_addr.sin_port));
