@@ -43,11 +43,15 @@ int main(int argc, char **argv)
     time_t ticks;
     int conn_fd  = 0;
     pid_t child_pid = 0;
+    char buff[MAX_BUFF_LEN] = {0};//缓冲区
     while(1)
     {
         int len = sizeof(clt_addr);
         conn_fd = accept(serv_sock, (struct sockaddr *)&clt_addr, (socklen_t *)&len);
-        
+        printf("Info: connect from %s, port %d\n", 
+            inet_ntop(AF_INET, &clt_addr.sin_addr, buff, sizeof(buff)),
+            ntohs(clt_addr.sin_port));
+
         if ((child_pid = fork()) == 0)// 子进程来处理连接的业务逻辑
         {
             close(serv_sock);
