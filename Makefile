@@ -1,4 +1,4 @@
-server: server.cpp
+server: server.cpp do_it.cpp
 	g++  $^ -o $@ 
 
 clean:

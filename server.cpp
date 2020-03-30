@@ -1,13 +1,5 @@
-#include<stdio.h>
-#include <strings.h>
-#include <string.h>
+#include "common.h"
 
-#include <sys/types.h>          /* See NOTES */
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-
-#include <unistd.h>
 #include <time.h>
 
 
@@ -44,30 +36,25 @@ int main(int argc, char **argv)
     }
 
     struct sockaddr_in clt_addr;
-    char buff[1024] = {0};//缓冲区
+    
     time_t ticks;
     int conn_fd  = 0;
+    pid_t child_pid = 0;
     while(1)
     {
         int len = sizeof(clt_addr);
         conn_fd = accept(serv_sock, (struct sockaddr *)&clt_addr, (socklen_t *)&len);
-        printf("Info: connect from %s, port %d\n", 
-            inet_ntop(AF_INET, &clt_addr.sin_addr, buff, sizeof(buff)),
-            ntohs(clt_addr.sin_port));
         
-        ticks = time(NULL);
-        snprintf(buff,sizeof(buff),"%.24s\r\n", ctime(&ticks));
-         
-       ret = write(conn_fd, buff, strlen(buff));
-        if(ret == -1){
-            fprintf(stderr, "write socket error");
-            return -1;
+        if ((child_pid = fork()) == 0)// 子进程来处理连接的业务逻辑
+        {
+            close(serv_sock);
+            do_it(conn_fd);
+            exit(0);
         }
-
+        
         close(conn_fd);
     }
 
-    close(conn_fd);
     printf("hello world!\n");
     return 0;
 }
