@@ -13,9 +13,17 @@
 
 #include <unistd.h>
 #include <errno.h>
+#include <signal.h>
 
 #define MAX_BUFF_LEN 1024
 
+//定义一个新类型
+//这个类型是一个函数
+//是一个带有一个int参数，返回为void的函数
+typedef void Sigfunc(int);
+
 void do_it(int sockfd);
+void sig_child(int signo);
+Sigfunc *Signal(int signo, Sigfunc *func);
 
 #endif // _COMMON_

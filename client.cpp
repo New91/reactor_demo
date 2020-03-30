@@ -21,20 +21,25 @@ int main(int argc, char **argv)
         fprintf(stderr, "usage: client <IP>\n");
         return 0;
     }
-     int clt_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if(clt_sock == -1){
-        fprintf(stderr, "create socket error");
-        return -1;
+
+    int i,sockfd[5];
+    for(int i = 0; i<5;i++)
+    {
+        sockfd[i] = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+        if(sockfd[i] == -1){
+            fprintf(stderr, "create socket error");
+            return -1;
+        }
+
+        struct sockaddr_in svr_addr;
+        bzero(&svr_addr, sizeof(svr_addr));
+        svr_addr.sin_family = AF_INET;
+        svr_addr.sin_port = htons(1024);
+        inet_pton(AF_INET, argv[1], &svr_addr.sin_addr);
+        connect(sockfd[i], (struct sockaddr *)&svr_addr, sizeof(svr_addr));
     }
-
-    struct sockaddr_in svr_addr;
-    bzero(&svr_addr, sizeof(svr_addr));
-    svr_addr.sin_family = AF_INET;
-    svr_addr.sin_port = htons(1024);
-    inet_pton(AF_INET, argv[1], &svr_addr.sin_addr);
-    connect(clt_sock, (struct sockaddr *)&svr_addr, sizeof(svr_addr));
-
-    do_it(stdin, clt_sock);
+     
+    do_it(stdin, sockfd[0]);
 
     return 0;
 }

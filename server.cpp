@@ -44,6 +44,7 @@ int main(int argc, char **argv)
     int conn_fd  = 0;
     pid_t child_pid = 0;
     char buff[MAX_BUFF_LEN] = {0};//缓冲区
+    Signal(SIGCHLD, sig_child); // 处理僵死进程
     while(1)
     {
         int len = sizeof(clt_addr);

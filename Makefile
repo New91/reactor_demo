@@ -1,6 +1,6 @@
 all: server client
 
-server: server.cpp do_it.cpp
+server: server.cpp do_it.cpp signal.cpp sigchldwait.cpp
 	g++  $^ -o $@ 
 client: client.cpp
 	g++  $^ -o $@ 
