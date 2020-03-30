@@ -21,17 +21,20 @@ int main(int argc, char **argv)
     //serv_addr.sin_addr.s_addr = inet_addr("127.0.0.1");
     serv_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     serv_addr.sin_port = htons(1024);
+    // 2.1 设置端口重用
+    int opt = 1;
+    setsockopt(serv_sock, SOL_SOCKET, SO_REUSEADDR, (char*)&opt, sizeof(opt));
 
     int ret = bind(serv_sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr));
     if(ret == -1){
-        fprintf(stderr, "bind socket error");
+        fprintf(stderr, "bind socket error\n");
         return -1;
     }
 
     // 3. 开始监听
     ret = listen(serv_sock, 10);
      if(ret == -1){
-        fprintf(stderr, "listen socket error");
+        fprintf(stderr, "listen socket error\n");
         return -1;
     }
 
@@ -51,7 +54,7 @@ int main(int argc, char **argv)
             do_it(conn_fd);
             exit(0);
         }
-        
+
         close(conn_fd);
     }
 
