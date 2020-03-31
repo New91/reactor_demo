@@ -1,18 +1,51 @@
 #include "common.h"
 
+int max(int a, int b){
+    return a>b?a:b;
+}
+
 static void do_it(FILE *fp, int sockfd)
 {
-    char sendline[MAX_BUFF_LEN] = {0};
-    char recvline[MAX_BUFF_LEN] = {0};
     int read_cnt = 0;
-    while(fgets(sendline, MAX_BUFF_LEN, fp) != NULL){
-        write(sockfd, sendline, strlen(sendline));
-        if((read_cnt = read(sockfd, recvline, sizeof(recvline))) < 0){
-            fprintf(stderr, "readline error\n");
-            exit(0);
+    int maxfdp1;
+    fd_set rset;
+    char sendline[MAX_BUFF_LEN];
+    char recvline[MAX_BUFF_LEN] = {0};
+    int stdineof = 0;
+    
+    for(;;)
+    {
+        FD_ZERO(&rset);
+        if(stdineof == 0)
+            FD_SET(fileno(fp), &rset);
+        FD_SET(sockfd, &rset);
+        maxfdp1 = max(fileno(fp), sockfd) + 1;
+        select(maxfdp1, &rset, NULL, NULL, NULL);//可以同时监控输入流和套接字
+
+        //网络套接字是否就绪
+        if(FD_ISSET(sockfd, &rset)){
+             if((read_cnt = read(sockfd, recvline, sizeof(recvline))) == 0){
+                 if(stdineof == 1)
+                    return;
+                else{
+                    fprintf(stderr, "readline error\n");
+                    exit(0);
+                }
+             }
+             recvline[read_cnt] = 0;
+            fputs(recvline, stdout);
         }
 
-        fputs(recvline, stdout);
+        //输入流是否就绪
+        if(FD_ISSET(fileno(fp), &rset)){
+            if(fgets(sendline, MAX_BUFF_LEN, fp) == NULL){
+                stdineof = 1;
+                shutdown(sockfd, SHUT_WR);//send FIN
+                FD_CLR(fileno(fp), &rset);
+                continue;
+            }
+            write(sockfd, sendline, strlen(sendline));
+        }
     }
 }
 int main(int argc, char **argv)
